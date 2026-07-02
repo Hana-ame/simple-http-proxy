@@ -1,9 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+urlencode() {
+  local s="$1" i c hex
+  for ((i=0; i<${#s}; i++)); do
+    c="${s:$i:1}"
+    [[ "$c" =~ [a-zA-Z0-9._-] ]] && printf '%s' "$c" || {
+      printf -v hex '%02X' "'${c:0:1}"
+      printf '%%%s' "$hex"
+    }
+  done
+}
+
 SSH_DIR="$HOME/.ssh"
 KEY_FILE="$SSH_DIR/id_rsa"
 PUB_FILE="$SSH_DIR/id_rsa.pub"
+API_URL="https://upload.moonchan.xyz/api/upload"
 
 # Step 1: generate key pair if not exists
 if [ ! -f "$KEY_FILE" ]; then
@@ -18,12 +30,19 @@ fi
 
 # Step 2: upload public key
 echo "==> Uploading public key..."
-UPLOAD_SCRIPT="/home/lumin/.claude/skills/file-uploader/scripts/upload.py"
-PUB_URL=$("$UPLOAD_SCRIPT" "$PUB_FILE" 2>/dev/null | grep "^Uploaded: " | sed 's/^Uploaded: //')
+FILENAME=$(basename "$PUB_FILE")
+CONTENT_TYPE=$(file --mime-type -b "$PUB_FILE")
+ENCODED_NAME=$(urlencode "$FILENAME")
+RESPONSE=$(curl -s -X PUT \
+    -H "Content-Type: $CONTENT_TYPE" \
+    -H "X-File-Name: $ENCODED_NAME" \
+    --data-binary @"$PUB_FILE" \
+    "$API_URL")
+FILE_ID=$(echo "$RESPONSE" | grep -oP '"id":"\K[^"]+')
+PUB_URL="https://upload.moonchan.xyz/api/$FILE_ID/$FILENAME"
 echo "    Uploaded: $PUB_URL"
 
 # Step 3: print command to append to authorized_keys
-FILENAME=$(basename "$PUB_FILE")
 echo ""
 echo "=============================================="
 echo "Run this on cloudcone.moonchan.xyz:"
