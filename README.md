@@ -27,8 +27,6 @@ Every `v*` tag is built by GitHub Actions (`.github/workflows/release.yml`) and 
 | Linux | arm64 | `goproxy-<tag>-linux-arm64` |
 | Windows | x86-64 | `goproxy-<tag>-windows-amd64.exe` |
 
-Each release also ships `SHA256SUMS`; verify a download with `sha256sum -c SHA256SUMS`.
-
 To cut a release, push a tag:
 
 ```bash
