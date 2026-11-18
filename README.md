@@ -17,6 +17,25 @@ go build -o goproxy .
 
 The proxy listens on `:1080` by default.
 
+## Prebuilt binaries
+
+Every `v*` tag is built by GitHub Actions (`.github/workflows/release.yml`) and published to the [Releases](https://github.com/Hana-ame/simple-http-proxy/releases) page:
+
+| OS | Arch | Asset |
+| --- | --- | --- |
+| Linux | x86-64 | `goproxy-<tag>-linux-amd64` |
+| Linux | arm64 | `goproxy-<tag>-linux-arm64` |
+| Windows | x86-64 | `goproxy-<tag>-windows-amd64.exe` |
+
+Each release also ships `SHA256SUMS`; verify a download with `sha256sum -c SHA256SUMS`.
+
+To cut a release, push a tag:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
 ## SSH Port Forwarding
 
 ### Option 1: Remote → Local（把本地代理暴露到远端）
